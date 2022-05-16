@@ -1,5 +1,22 @@
+# Overview
+
+Recently, using Docker to develop applications is becoming popular.  This repo documents a reasonable
+workflow for developers to set up and manage an app with a single codebase.  If you have many microservices
+or other infrastructure to setup (such as automatically deploying a database), then you'll probably
+want to augment this workflow.
+
+## Goals
+
+- Focus on Node.js environment
+- Allow local development without Docker
+- Allow local development with Docker
+- Allow easy scripts to build container images
+- Isolate container scripts from source code
+- Be straightforward, but explain all the steps so modifications can be made
+
 # File Structure
 
+You'll want to start with a simple directory.  I am skipping common files such as `.gitignore` for simplicity.
 
 ```
 .
@@ -17,12 +34,12 @@
 
 (This graph generated from https://tree.nathanfriend.io/)
 
-### Notes
+**Notes**
 
 - The `node_modules` directory will be ignored when building the Docker image.  The directory is included
 here for local development.
 
-# Guide
+# Usage Guide
 
 ## Local Development
 
