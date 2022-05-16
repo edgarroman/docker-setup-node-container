@@ -77,6 +77,15 @@ To stop the container, use the Docker GUI or Docker CLI commands
 docker run -d --rm -p 8080:8080  nodetest1
 ```
 
+**To start the container and get a shell prompt so you can look around:**
+
+This is very useful during debugging of the container to see where files and directories live
+
+```sh
+docker run -ti --rm --entrypoint /bin/sh nodetest1
+```
+
+
 
 ```sh
 docker run -ti --rm -v "$(pwd):/home/node/app"  --entrypoint /bin/sh nodetest1

@@ -18,19 +18,33 @@ ENTRYPOINT ["/sbin/tini", "--"]
 RUN npm install -g npm@8.5.4
 
 # Specific to your framework
-# TODO add your global installs here and expose the port it runs on by default
-# RUN npm install -g express
+#
+# Some frameworks force a global install tool such as aws-amplify or firebase.  Run those commands here
+# RUN npm install -g firebase
 
-
+# Expose the port to listen on here.  Express uses 8080 by default so we'll set that here.
 ENV PORT=8080
 EXPOSE $PORT
 
 # Create space for our code to live
 RUN mkdir -p /home/node/app && chown node:node /home/node/app
 WORKDIR /home/node/app
-ENV NODE_PATH=/home/node/app/node_modules_docker
 
+# Switch to the `node` user instead of running as `root` for improved security
 USER node
+
+# Copy the package.json file over and run `npm install`
+COPY server-code/package*.json ./
+RUN npm install
+
+# Now copy rest of the code.  We separate these copies so that Docker can cache the node_modules directory
+# So only when you add/remove/update package.json file will Docker rebuild the node_modules dir.
+COPY server-code ./
+
+# Finally, if the container is run in headless, non-interactive mode, start up node
+# This can be overridden by the user running the Docker CLI by specifying a different endpoint
+CMD ["node","server.js"]
+
 
 #####################################################################
 #
@@ -44,12 +58,8 @@ USER node
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
 # where available (npm@5+)
 #COPY package*.json ./
-COPY server-code/package*.json ./
-
-RUN npm install
-
-# Now copy rest of the code.  We separate these copies so that Docker can cache the node_modules directory
-COPY server-code ./
+#COPY server-code/package*.json ./
+#RUN npm install
 
 # If you are building your code for production
 # RUN npm ci --only=production
@@ -69,7 +79,7 @@ COPY server-code ./
 #COPY --chown=node:node --from=build /home/node/app/build .
 #EXPOSE $PORT
 #CMD [ "dumb-init", "sails", "lift" ]
-CMD ["node","server.js"]
+#CMD ["node","server.js"]
 
 
 #####################################################################
