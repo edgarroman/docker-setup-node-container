@@ -49,19 +49,19 @@ This setup does not include Docker at all. Steps:
 1. First time or if there is no `node_modules` directory, run:`npm install`
 1. To start a local server, run: `node server.js`
 
-## Local Testing in Docker
+## Local Testing in Docker (without live code updates)
 
 This setup allows you build and run the container locally.  However, when you make code changes,
 you'll have to rebuild the container to see the updates.  Also, the `node_modules` folder in the source
 directory is ignored and re-created during the build process of the container.
 
-**To build:**
+### To build
 
 ```sh
 docker build . -t nodetest1
 ```
 
-**To run development mode with console messages being printed out to the screen:**
+### To run development mode with console messages being printed out to the screen:
 
 Type Ctrl-C to stop the container
 
@@ -69,7 +69,7 @@ Type Ctrl-C to stop the container
 docker run -ti --rm -p 8080:8080  nodetest1
 ```
 
-**To run the container in the background without anything printed to the console:**
+### To run the container in the background without anything printed to the console
 
 To stop the container, use the Docker GUI or Docker CLI commands
 
@@ -77,7 +77,7 @@ To stop the container, use the Docker GUI or Docker CLI commands
 docker run -d --rm -p 8080:8080  nodetest1
 ```
 
-**To start the container and get a shell prompt so you can look around:**
+### To start the container and get a shell prompt so you can look around
 
 This is very useful during debugging of the container to see where files and directories live
 
