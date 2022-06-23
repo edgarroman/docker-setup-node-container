@@ -86,7 +86,7 @@ docker run -ti --rm --entrypoint /bin/sh nodetest1
 ```
 
 
-
+ 
 ```sh
-docker run -ti --rm -v "$(pwd):/home/node/app"  --entrypoint /bin/sh nodetest1
+docker run -ti --rm -v "$(pwd)/server-code:/home/node/app" -v /home/node/app/node_modules --entrypoint /bin/sh nodetest1
 ```
