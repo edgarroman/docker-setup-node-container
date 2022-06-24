@@ -81,10 +81,3 @@ CMD ["npm","start"]
 #CMD [ "dumb-init", "sails", "lift" ]
 #CMD ["node","server.js"]
 
-
-#####################################################################
-#
-#FROM base AS development
-# Maybe dev is a dumb idea...
-# Can't run install RUN npm install
-

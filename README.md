@@ -1,7 +1,7 @@
 # Overview
 
-Recently, using Docker to develop applications is becoming popular.  This repo documents a reasonable
-workflow for developers to set up and manage an app with a single codebase.  If you have many microservices
+Recently, using Docker to develop applications is becoming popular.  This repo documents a number of reasonable
+workflows for developers to set up and manage a Node app with a single codebase.  If you have many microservices
 or other infrastructure to setup (such as automatically deploying a database), then you'll probably
 want to augment this workflow.
 
@@ -14,9 +14,9 @@ want to augment this workflow.
 - Isolate container scripts from source code
 - Be straightforward, but explain all the steps so modifications can be made
 
-# File Structure
+# Directory Structure and Files
 
-You'll want to start with a simple directory.  I am skipping common files such as `.gitignore` for simplicity.
+You'll want to start with a simple directory structure.
 
 ```
 .
@@ -27,27 +27,77 @@ You'll want to start with a simple directory.  I am skipping common files such a
     │   ├── # All your other source code files
     │   └── node_modules/
     │       └── # Local dev only (see notes)
+    ├── .gitignore
     ├── .dockerignore
     ├── Dockerfile
     └── README.md
 ```
 
-(This graph generated from https://tree.nathanfriend.io/)
+(This graph generated on https://tree.nathanfriend.io/)
 
-**Notes**
+### **Notes**
 
-- The `node_modules` directory will be ignored when building the Docker image.  The directory is included
-here for local development.
+- The `server-code` directory is an arbitrary name.
+You may rename it, but be sure to update all the references in the Dockerfiles and Docker commands.
+The purpose of this subdirectory is to isolate your server code from all the container stuff.
 
-# Usage Guide
+- The `node_modules` directory will be ignored when using Docker.
+The directory is used during local development without containers.
+More details are below.
 
-## Local Development
+# Workflow Guide
 
-This setup does not include Docker at all. Steps:
+We'll explore four workflows of developing, running, and testing your code:
+
+1. Local development without containers
+1. Local development with containers
+1. Local testing in a container
+1. Production build
+
+This section describes how to use the workflows, but does not get into the details of the container setup.
+We'll explain the container setup in a later section.
+
+## Local development without containers
+
+This workflow does not use Docker at all.
+This allows you to develop your code locally on your system with the least number of abstractions and complications.  
+
+This means that your local system is directly running Node and directly loading your code.
+This workflow will requires the least amount of processing power by your machine
+and will provide the most responsive development environment.
+When you make changes to your code, they be reflected as quickly as possible.  
+(By the way, we're using `nodemon` to
+detect changes to the code and have Node reloaded to recognize those changes.)
+
+The downside to this approach is that most likely your local machine
+is not running the operating system that your final container will be running.
+If you're running Windows, MacOS, or even some flavors of Linux, the packages used locally
+may not be identical to those ultimately used in production.
+
+The differences these packages have between platforms could inject subtle bugs and errors that would be confounding and difficult to debug.
+While many straightforward Javascript packages may be identical between platforms,
+there also may be differences when your code needs to interact with the host machine's operating system.  
+
+With the pitfalls noted above, why should you take this approach?  
+In my experience, it's faster and easier to this approach when developing most applications.
+You don't need to spin up Docker and it uses less CPU cycles
+on your local machine.  I prefer it when working on a project by myself that does not need collaboration.  
+When I do collaborate with others, it's best to use one of the other approaches below.
+
+### Steps to get up and running
 
 1. Navigate to the directory: `cd server-code`
-1. First time or if there is no `node_modules` directory, run:`npm install`
-1. To start a local server, run: `node server.js`
+1. First time or if there is no `node_modules` directory, run: `npm install` or `yarn` if you prefer
+1. To start the local server, run: `npm start`
+
+## Local Development with Containers Workflow
+
+This workflow allows you to develop by running your code container environment.
+This container environment matches exactly what you will be deploying to production.
+
+
+ so you can run your code in the actual environment 
+of production.  
 
 ## Local Testing in Docker (without live code updates)
 
@@ -86,7 +136,11 @@ docker run -ti --rm --entrypoint /bin/sh nodetest1
 ```
 
 
+```sh
+docker run -ti --rm -p 8080:8080 -v "$(pwd)/server-code:/home/node/app" -v /home/node/app/node_modules nodetest1
+```
+
  
 ```sh
-docker run -ti --rm -v "$(pwd)/server-code:/home/node/app" -v /home/node/app/node_modules --entrypoint /bin/sh nodetest1
+docker run -ti --rm -p 8080:8080 -v "$(pwd)/server-code:/home/node/app" -v /home/node/app/node_modules --entrypoint /bin/sh nodetest1
 ```
