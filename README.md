@@ -1,8 +1,9 @@
 # Overview
 
-Recently, using Docker to develop applications is becoming popular.  This repo documents a number of reasonable
-workflows for developers to set up and manage a Node app with a single codebase.  If you have many microservices
-or other infrastructure to setup (such as automatically deploying a database), then you'll probably
+Recently, using Docker to develop applications is becoming popular.
+This repo documents a number of reasonable workflows for developers to set up and manage a Node app with a single codebase.
+If you have many microservices or other infrastructure to setup
+(such as a separate container for a database), then you'll probably
 want to augment this workflow.
 
 ## Goals
@@ -10,7 +11,7 @@ want to augment this workflow.
 - Focus on Node.js environment
 - Allow local development without Docker
 - Allow local development with Docker
-- Allow easy scripts to build container images
+- Provide scripts to build container images for testing and production
 - Isolate container scripts from source code
 - Be straightforward, but explain all the steps so modifications can be made
 
@@ -95,9 +96,45 @@ When I do collaborate with others, it's best to use one of the other approaches 
 This workflow allows you to develop by running your code container environment.
 This container environment matches exactly what you will be deploying to production.
 
+This is a development workflow where you can still edit your source code
+and any updates will be reflected in the server.  We are still using
+`nodemon` to detect source code changes and reload Node.
 
- so you can run your code in the actual environment 
-of production.  
+### Steps to get up and running
+
+1. Start Docker on your local machine
+1. Navigate to the main project directory (not in `server-code`)
+1. If this the first time you are running the container, or if you have changed *any* package dependencies, then run:
+    ```sh
+    docker build . -t mynodeapp
+    ```
+
+1. Run the following command:
+    ```sh
+    docker run -ti --rm -p 8080:8080 -v "$(pwd)/server-code:/home/node/app" -v /home/node/app/node_modules mynodeapp
+    ```
+
+What you should see is Docker will start to run your container
+in the terminal window and any console messages will appear as they are printed out.  
+
+Changes to the source code should trigger a reload of Node and will be reflected in the console.  
+
+**Notes**
+
+- If you make any changes to dependent packages, then you'll have to run the `docker build` command as shown above.  Any time you add / remove a package or update the version.
+
+- We assume that node will be running on port 8080.  If this is not the case for your project, feel free to change it, but make sure to change it everywhere.
+
+This workflow is made possible by some clever Docker commands.  We'll expand on the command above here:
+
+- `docker run`: This is the primary Docker command to take a container image and run it
+- `-ti`: This instructs Docker to run this container interactively so you can see the output console
+- `--rm`: After you exit the container instance by pressing `Ctrl-c` this flag instructs Docker to clean up after the container
+- `-p 8080:8080`: Ensure port 8080 on the container is mapped to port 8080 on your local machine so you can use `http://localhost:8080`
+- `-v "$(pwd)/server-code:/home/node/app"`: This maps the directory (and your source code) into the container directory `/home/node/app`.  So your source code and everything in the `server-code` directory is available in the container.  
+- `-v /home/node/app/node_modules`: This is a special command that excludes the `node_modules` directory on your local machine and instead keeps the container's `node_modules` directory that was created during the build phase.  This is important because the `node_modules` on your local machine is full of packages that are specific to the local machine operating system.  And since we want the package for the container operating system, this flag makes that one directory shine through.  
+- `mynodeapp`: This is whatever you want to call your container image.
+
 
 ## Local Testing in Docker (without live code updates)
 
