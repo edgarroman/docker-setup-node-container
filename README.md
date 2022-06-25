@@ -93,8 +93,8 @@ When I do collaborate with others, it's best to use one of the other approaches 
 
 ## Local Development with Containers Workflow
 
-This workflow allows you to develop by running your code container environment.
-This container environment matches exactly what you will be deploying to production.
+This workflow allows you to develop by running your code in a container environment.
+This container environment matches almost exactly what you will be deploying to production.
 
 This is a development workflow where you can still edit your source code
 and any updates will be reflected in the server.  We are still using
@@ -131,16 +131,37 @@ This workflow is made possible by some clever Docker commands.  We'll expand on 
 - `-ti`: This instructs Docker to run this container interactively so you can see the output console
 - `--rm`: After you exit the container instance by pressing `Ctrl-c` this flag instructs Docker to clean up after the container
 - `-p 8080:8080`: Ensure port 8080 on the container is mapped to port 8080 on your local machine so you can use `http://localhost:8080`
-- `-v "$(pwd)/server-code:/home/node/app"`: This maps the directory (and your source code) into the container directory `/home/node/app`.  So your source code and everything in the `server-code` directory is available in the container.  
+- `-v "$(pwd)/server-code:/home/node/app"`: This maps the directory `server-code` (along with your source code) into the container directory `/home/node/app`.  So your source code and everything in the `server-code` directory is available in the container.  
 - `-v /home/node/app/node_modules`: This is a special command that excludes the `node_modules` directory on your local machine and instead keeps the container's `node_modules` directory that was created during the build phase.  This is important because the `node_modules` on your local machine is full of packages that are specific to the local machine operating system.  And since we want the package for the container operating system, this flag makes that one directory shine through.  
 - `mynodeapp`: This is whatever you want to call your container image.
 
+## Local Testing with Containers Workflow (without live code updates)
 
-## Local Testing in Docker (without live code updates)
+This workflow allows you to test your container image by running it locally but with production settings.
+It's an exact match of what you would deploy in production, but it allows you to view the 
+console output to help remove any bugs or errors.
 
-This setup allows you build and run the container locally.  However, when you make code changes,
-you'll have to rebuild the container to see the updates.  Also, the `node_modules` folder in the source
-directory is ignored and re-created during the build process of the container.
+For this workflow, there is no live reloading of source code.
+So if you make a change to the source code, you'll have to run the build step for every change.
+
+### Steps to get up and running
+
+1. Start Docker on your local machine
+1. Navigate to the main project directory (not in `server-code`)
+1. If this the first time you are running the container, or if you have changed *any* source code, then run:
+    ```sh
+    docker build . -t mynodeapp
+    ```
+
+1. Run the following command:
+    ```sh
+    docker run -ti --rm -p 8080:8080 mynodeapp
+    ```
+
+**TODO**: set the production flag
+
+---
+stopped here
 
 ### To build
 
