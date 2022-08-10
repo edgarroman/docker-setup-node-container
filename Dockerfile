@@ -1,6 +1,12 @@
 # Base node images can be found here: https://hub.docker.com/_/node?tab=description&amp%3Bpage=1&amp%3Bname=alpine
 ARG NODE_IMAGE=node:16.15-alpine
 
+#####################################################################
+# Base Image 
+# 
+# All these commands are common to both development and production builds
+#
+#####################################################################
 FROM $NODE_IMAGE AS base
 
 # While root is the default user to run as, why not be explicit?
@@ -15,16 +21,12 @@ RUN apk add --no-cache tini
 ENTRYPOINT ["/sbin/tini", "--"]
 
 # Upgrade some global packages
-RUN npm install -g npm@8.5.4
+RUN npm install -g npm@8.16.0
 
 # Specific to your framework
 #
 # Some frameworks force a global install tool such as aws-amplify or firebase.  Run those commands here
 # RUN npm install -g firebase
-
-# Expose the port to listen on here.  Express uses 8080 by default so we'll set that here.
-ENV PORT=8080
-EXPOSE $PORT
 
 # Create space for our code to live
 RUN mkdir -p /home/node/app && chown node:node /home/node/app
@@ -32,6 +34,18 @@ WORKDIR /home/node/app
 
 # Switch to the `node` user instead of running as `root` for improved security
 USER node
+
+# Expose the port to listen on here.  Express uses 8080 by default so we'll set that here.
+ENV PORT=8080
+EXPOSE $PORT
+
+#####################################################################
+# Development build
+# 
+# These commands are unique to the development builds
+#
+#####################################################################
+FROM base AS development
 
 # Copy the package.json file over and run `npm install`
 COPY server-code/package*.json ./
@@ -45,39 +59,23 @@ COPY server-code ./
 # This can be overridden by the user running the Docker CLI by specifying a different endpoint
 CMD ["npm","start"]
 
-
 #####################################################################
+# Production build
+# 
+# These commands are unique to the production builds
 #
-# Finish with: https://nodejs.org/en/docs/guides/nodejs-docker-webapp/
-#
-#FROM base AS production
-#ENV NODE_ENV=production
-#RUN npm ci --only=production
+#####################################################################
+FROM base AS production
 
-# Install app dependencies
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
-# where available (npm@5+)
-#COPY package*.json ./
-#COPY server-code/package*.json ./
-#RUN npm install
+ARG NODE_ENV=production
+ENV NODE_ENV=${NODE_ENV}
 
-# If you are building your code for production
-# RUN npm ci --only=production
+# Now copy rest of the code.  We separate these copies so that Docker can cache the node_modules directory
+# So only when you add/remove/update package.json file will Docker rebuild the node_modules dir.
+COPY --chown=node server-code ./
+RUN npm install && npm cache clean --force
 
-#FROM base AS dependencies
-#COPY --chown=node:node ./package*.json ./
-#RUN npm ci
-#COPY --chown=node:node . .
-
-#
-#FROM base AS production
-#ENV NODE_ENV=production
-#ENV PORT=$PORT
-#ENV HOST=0.0.0.0
-#COPY --chown=node:node ./package*.json ./
-#RUN npm ci --production
-#COPY --chown=node:node --from=build /home/node/app/build .
-#EXPOSE $PORT
-#CMD [ "dumb-init", "sails", "lift" ]
-#CMD ["node","server.js"]
+# Finally, if the container is run in headless, non-interactive mode, start up node
+# This can be overridden by the user running the Docker CLI by specifying a different endpoint
+CMD ["npm","run", "productionstart"]
 
