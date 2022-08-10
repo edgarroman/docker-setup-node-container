@@ -1,5 +1,5 @@
 # Base node images can be found here: https://hub.docker.com/_/node?tab=description&amp%3Bpage=1&amp%3Bname=alpine
-ARG NODE_IMAGE=node:16.15-alpine
+ARG NODE_IMAGE=node:16.16-alpine
 
 #####################################################################
 # Base Image 
@@ -8,6 +8,7 @@ ARG NODE_IMAGE=node:16.15-alpine
 #
 #####################################################################
 FROM $NODE_IMAGE AS base
+ARG NPM_VERSION=npm@8.16.0
 
 # While root is the default user to run as, why not be explicit?
 USER root
@@ -21,7 +22,7 @@ RUN apk add --no-cache tini
 ENTRYPOINT ["/sbin/tini", "--"]
 
 # Upgrade some global packages
-RUN npm install -g npm@8.16.0
+RUN npm install -g $NPM_VERSION
 
 # Specific to your framework
 #
@@ -67,6 +68,7 @@ CMD ["npm","start"]
 #####################################################################
 FROM base AS production
 
+# Indicate to all processes in the container that this is a production build
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
 

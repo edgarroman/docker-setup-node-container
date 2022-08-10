@@ -9,7 +9,7 @@ const HOST = '0.0.0.0'
 // App
 const app = express()
 app.get('/', (req, res) => {
-    console.log(`logs here! change 6`)
+    console.log(`logs here! change 2`)
     res.send('Hello World')
 })
 
