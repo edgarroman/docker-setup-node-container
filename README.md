@@ -31,6 +31,7 @@ You'll want to start with a simple directory structure.
     ├── .gitignore
     ├── .dockerignore
     ├── Dockerfile
+    ├── docker-compose.yml
     └── README.md
 ```
 
@@ -45,6 +46,7 @@ You'll want to start with a simple directory structure.
 -   The `node_modules` directory will be ignored when using Docker.
     The directory is used during local development without containers.
     More details are below.
+-   The `Dockerfile` and `docker-compose.yml` will be taken from this repo.
 
 # Workflow Guide
 
@@ -52,6 +54,7 @@ We'll explore workflows of developing and testing your code:
 
 1. Local development without containers
 1. Local development with containers
+1. Simplified Local development with containers
 1. Production Build and Local Testing with containers
 
 This section describes how to use the workflows, but does not get into the details of the container setup.
@@ -81,7 +84,7 @@ there also may be differences when your code needs to interact with the host mac
 With the pitfalls noted above, why should you take this approach?  
 In my experience, it's faster and easier to this approach when developing most applications.
 You don't need to spin up Docker and it uses less CPU cycles
-on your local machine. I prefer it when working on a project by myself that does not need collaboration.  
+on your local machine. I prefer it when working on a project by myself that does not need collaboration.
 
 When I do collaborate with others, it's best to use one of the other approaches below.
 
@@ -109,12 +112,13 @@ and any updates will be reflected in the server. We are still using
 1. If this the first time you are running the container, or if you have changed _any_ package dependencies, then run:
 
     ```sh
-    docker build . -t mynodeapp --target=development
+    docker build . -t mynodeapp:DEV --target=development
     ```
 
 1. Run the following command:
+2. 
     ```sh
-    docker run -ti --rm -p 8080:8080 -v "$(pwd)/server-code:/home/node/app" -v /home/node/app/node_modules mynodeapp
+    docker run -ti --rm -p 8080:8080 -v "$(pwd)/server-code:/home/node/app" -v /home/node/app/node_modules mynodeapp:DEV
     ```
 
 What you should see is Docker will start to run your container
@@ -136,7 +140,53 @@ This workflow is made possible by some clever Docker commands. We'll expand on t
 -   `-p 8080:8080`: Ensure port 8080 on the container is mapped to port 8080 on your local machine so you can use `http://localhost:8080`
 -   `-v "$(pwd)/server-code:/home/node/app"`: This maps the directory `server-code` (along with your source code) into the container directory `/home/node/app`. So your source code and everything in the `server-code` directory is available in the container.
 -   `-v /home/node/app/node_modules`: This is a special command that excludes the `node_modules` directory on your local machine and instead keeps the container's `node_modules` directory that was created during the build phase. This is important because the `node_modules` on your local machine is full of packages that are specific to the local machine operating system. And since we want the package for the container operating system, this flag makes that one directory shine through.
--   `mynodeapp`: This is whatever you want to call your container image.
+-   `mynodeapp:DEV`: This is whatever you want to call your container image.  We tag this image with `DEV` to make sure you don't accidentaly deploy this version.
+
+## Simplified Local Development with Containers Workflow
+
+The commands to enable this workflow are very long, complex, and diffcult to remember.
+To simplify this workflow, we have a few options. One common option is create shell scripts for the commands above. This works, but will be operating system specific (e.g. Windows will need a different solution than most shells).
+
+We can use Docker Compose to simplify. Docker Compose is a tool that allows you to put all the commands into a file that does the work for you. It also allows you to spin up multiple containers at the same time. This is useful if you have to spin up both a web server and a database server for local development.
+
+Note that the Docker Compose we are going to show here is for development flow only. For production, you'll need other infrastructure tools based on your production environment, such as [Terraform](https://www.terraform.io/)
+
+First, create the `docker-compose.yml` file:
+
+```
+services:
+  app:
+    build:
+      context: .
+      target: development
+      args:
+        - NODE_ENV=development
+    environment:
+        - NODE_ENV=development
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./server-code:/home/node/app
+      - /home/node/app/node_modules
+```
+
+Note that we've put the same command line arguments into to the file itself. So that makes it easy to build:
+
+```sh
+docker compose build
+```
+
+And **really** easy to run:
+
+```sh
+docker compose up
+```
+
+And when you're finished
+
+```sh
+docker compose down
+```
 
 ## Production Build for Local Testing with Containers Workflow (without live code updates)
 
@@ -151,57 +201,44 @@ So if you make a change to the source code, you'll have to run the build step fo
 
 1. Start Docker on your local machine
 1. Navigate to the main project directory (not in `server-code`)
-1. If this the first time you are running the container, or if you have changed _any_ source code, then run:
+1. To build the container image:
+
+
     ```sh
-        docker build . --target=production -t mynodeprod .
+    docker build . --target=production -t mynodeapp:1.00
     ```
 1. To run an instance locally, run the following command:
+
+
     ```sh
-    docker run -ti --rm -p 8080:8080 mynodeprod
+    docker run -ti --rm -p 8080:8080 mynodeapp:1.00
     ```
 
-## Additional notes
+## Additional tips and tricks
 
 ### To run the container in the background without anything printed to the console
 
-To stop the container, use the Docker GUI or Docker CLI commands
 
 ```sh
-docker run -d --rm -p 8080:8080  mynodeprod
+docker run -d --rm -p 8080:8080  mynodeapp:1.00
 ```
+
+To stop the container, use the Docker GUI or Docker CLI commands
+
 
 ### To start the container and get a shell prompt so you can look around
 
 This is very useful during debugging of the container to see where files and directories live
 
-```sh
-docker run -ti --rm --entrypoint /bin/sh mynodeprod
-```
+In development mode:
 
 ```sh
-docker run -ti --rm -p 8080:8080 -v "$(pwd)/server-code:/home/node/app" -v /home/node/app/node_modules --entrypoint /bin/sh mynodeapp
+docker run -ti --rm -p 8080:8080 -v "$(pwd)/server-code:/home/node/app" -v /home/node/app/node_modules --entrypoint /bin/sh mynodeapp:DEV
 ```
 
-## Docker Compose for dev
+To see the production build image:
 
 ```sh
-docker compose build
+docker run -ti --rm --entrypoint /bin/sh mynodeapp:1.00
 ```
 
-To run
-
-```sh
-docker compose up
-```
-
-And shutdown
-
-```sh
-docker compose down
-```
-
-To run interactive. Uncomment stuff and go
-
-```sh
-docker compose run --rm app
-```
