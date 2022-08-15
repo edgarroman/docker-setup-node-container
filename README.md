@@ -48,15 +48,14 @@ You'll want to start with a simple directory structure.
 
 # Workflow Guide
 
-We'll explore four workflows of developing, running, and testing your code:
+We'll explore workflows of developing and testing your code:
 
 1. Local development without containers
 1. Local development with containers
-1. Local testing in a container
-1. Production build
+1. Production Build and Local Testing with containers
 
 This section describes how to use the workflows, but does not get into the details of the container setup.
-We'll explain the container setup in a later section.
+We'll explain the container setup later.
 
 ## Local development without containers
 
@@ -83,6 +82,7 @@ With the pitfalls noted above, why should you take this approach?
 In my experience, it's faster and easier to this approach when developing most applications.
 You don't need to spin up Docker and it uses less CPU cycles
 on your local machine. I prefer it when working on a project by myself that does not need collaboration.  
+
 When I do collaborate with others, it's best to use one of the other approaches below.
 
 ### Steps to get up and running
@@ -90,6 +90,8 @@ When I do collaborate with others, it's best to use one of the other approaches 
 1. Navigate to the directory: `cd server-code`
 1. First time or if there is no `node_modules` directory, run: `npm install` or `yarn` if you prefer
 1. To start the local server, run: `npm start`
+
+This should look very familiar to many developers since it's the default approach most folks take when developing a Node app.
 
 ## Local Development with Containers Workflow
 
@@ -178,4 +180,28 @@ docker run -ti --rm --entrypoint /bin/sh mynodeprod
 
 ```sh
 docker run -ti --rm -p 8080:8080 -v "$(pwd)/server-code:/home/node/app" -v /home/node/app/node_modules --entrypoint /bin/sh mynodeapp
+```
+
+## Docker Compose for dev
+
+```sh
+docker compose build
+```
+
+To run
+
+```sh
+docker compose up
+```
+
+And shutdown
+
+```sh
+docker compose down
+```
+
+To run interactive. Uncomment stuff and go
+
+```sh
+docker compose run --rm app
 ```

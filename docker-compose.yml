@@ -1,0 +1,18 @@
+services:
+  app:
+    build:
+      context: .
+      target: development
+      args:
+        - NODE_ENV=development    
+    environment:
+        - NODE_ENV=development
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./server-code:/home/node/app
+      - /home/node/app/node_modules
+#    entrypoint: 
+#      - /bin/sh
+#    stdin_open: true # docker run -i
+#    tty: true        # docker run -t

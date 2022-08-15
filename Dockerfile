@@ -30,7 +30,7 @@ RUN npm install -g $NPM_VERSION
 # RUN npm install -g firebase
 
 # Create space for our code to live
-RUN mkdir -p /home/node/app && chown node:node /home/node/app
+RUN mkdir -p /home/node/app && chown -R node:node /home/node/app
 WORKDIR /home/node/app
 
 # Switch to the `node` user instead of running as `root` for improved security
@@ -74,7 +74,7 @@ ENV NODE_ENV=${NODE_ENV}
 
 # Now copy rest of the code.  We separate these copies so that Docker can cache the node_modules directory
 # So only when you add/remove/update package.json file will Docker rebuild the node_modules dir.
-COPY --chown=node server-code ./
+COPY --chown=node:node server-code ./
 RUN npm install && npm cache clean --force
 
 # Finally, if the container is run in headless, non-interactive mode, start up node
