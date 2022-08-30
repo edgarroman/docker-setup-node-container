@@ -58,7 +58,7 @@ COPY server-code ./
 
 # Finally, if the container is run in headless, non-interactive mode, start up node
 # This can be overridden by the user running the Docker CLI by specifying a different endpoint
-CMD ["npm","start"]
+CMD ["npx", "nodemon","server.js"]
 
 #####################################################################
 # Production build
