@@ -81,12 +81,11 @@ The differences these packages have between platforms could inject subtle bugs a
 While many straightforward Javascript packages may be identical between platforms,
 there also may be differences when your code needs to interact with the host machine's operating system.
 
-With the pitfalls noted above, why should you take this approach?  
-In my experience, it's faster and easier to this approach when developing most applications.
-You don't need to spin up Docker and it uses less CPU cycles
-on your local machine. I prefer it when working on a project by myself that does not need collaboration.
+With the pitfalls noted above, why should you take this approach? I would only
+recommend this approach if you are working in an environment where running Docker Desktop
+puts too much stress on your machine.
 
-When I do collaborate with others, it's best to use one of the other approaches below.
+In general, I suggest using the other workflows.
 
 ### Steps to get up and running
 
@@ -116,10 +115,9 @@ and any updates will be reflected in the server. We are still using
     ```
 
 1. Run the following command:
-2. 
-    ```sh
-    docker run -ti --rm -p 8080:8080 -v "$(pwd)/server-code:/home/node/app" -v /home/node/app/node_modules mynodeapp:DEV
-    ```
+1. ```sh
+   docker run -ti --rm -p 8080:8080 -v "$(pwd)/server-code:/home/node/app" -v /home/node/app/node_modules mynodeapp:DEV
+   ```
 
 What you should see is Docker will start to run your container
 in the terminal window and any console messages will appear as they are printed out.
@@ -140,7 +138,7 @@ This workflow is made possible by some clever Docker commands. We'll expand on t
 -   `-p 8080:8080`: Ensure port 8080 on the container is mapped to port 8080 on your local machine so you can use `http://localhost:8080`
 -   `-v "$(pwd)/server-code:/home/node/app"`: This maps the directory `server-code` (along with your source code) into the container directory `/home/node/app`. So your source code and everything in the `server-code` directory is available in the container.
 -   `-v /home/node/app/node_modules`: This is a special command that excludes the `node_modules` directory on your local machine and instead keeps the container's `node_modules` directory that was created during the build phase. This is important because the `node_modules` on your local machine is full of packages that are specific to the local machine operating system. And since we want the package for the container operating system, this flag makes that one directory shine through.
--   `mynodeapp:DEV`: This is whatever you want to call your container image.  We tag this image with `DEV` to make sure you don't accidentaly deploy this version.
+-   `mynodeapp:DEV`: This is whatever you want to call your container image. We tag this image with `DEV` to make sure you don't accidentaly deploy this version.
 
 ## Simplified Local Development with Containers Workflow
 
@@ -203,12 +201,11 @@ So if you make a change to the source code, you'll have to run the build step fo
 1. Navigate to the main project directory (not in `server-code`)
 1. To build the container image:
 
-
     ```sh
     docker build . --target=production -t mynodeapp:1.00
     ```
-1. To run an instance locally, run the following command:
 
+1. To run an instance locally, run the following command:
 
     ```sh
     docker run -ti --rm -p 8080:8080 mynodeapp:1.00
@@ -218,13 +215,11 @@ So if you make a change to the source code, you'll have to run the build step fo
 
 ### To run the container in the background without anything printed to the console
 
-
 ```sh
 docker run -d --rm -p 8080:8080  mynodeapp:1.00
 ```
 
 To stop the container, use the Docker GUI or Docker CLI commands
-
 
 ### To start the container and get a shell prompt so you can look around
 
@@ -241,4 +236,3 @@ To see the production build image:
 ```sh
 docker run -ti --rm --entrypoint /bin/sh mynodeapp:1.00
 ```
-
