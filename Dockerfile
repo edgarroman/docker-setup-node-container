@@ -72,12 +72,11 @@ FROM base AS production
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
 
-# Now copy rest of the code.  We separate these copies so that Docker can cache the node_modules directory
-# So only when you add/remove/update package.json file will Docker rebuild the node_modules dir.
+# Now copy all source code  
 COPY --chown=node:node server-code ./
 RUN npm install && npm cache clean --force
 
 # Finally, if the container is run in headless, non-interactive mode, start up node
 # This can be overridden by the user running the Docker CLI by specifying a different endpoint
-CMD ["npm","run", "productionstart"]
+CMD ["node","server.js"]
 
