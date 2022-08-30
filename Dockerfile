@@ -1,5 +1,5 @@
 # Base node images can be found here: https://hub.docker.com/_/node?tab=description&amp%3Bpage=1&amp%3Bname=alpine
-ARG NODE_IMAGE=node:16.16-alpine
+ARG NODE_IMAGE=node:16.17-alpine
 
 #####################################################################
 # Base Image 
@@ -8,7 +8,7 @@ ARG NODE_IMAGE=node:16.16-alpine
 #
 #####################################################################
 FROM $NODE_IMAGE AS base
-ARG NPM_VERSION=npm@8.16.0
+ARG NPM_VERSION=npm@8.18.0
 
 # While root is the default user to run as, why not be explicit?
 USER root
